@@ -21,4 +21,4 @@ pik = Pik(
     actuator_names=actuator_names,
     reference_pose=reference_pose,
 )
-pik.solve(np.array([0.5, 0, 0.5]), np.array([0, 1, 0, 0]))
+pik.ik(np.array([0.5, 0, 0.5]), np.array([0, 1, 0, 0]))

@@ -60,20 +60,15 @@ class Pik:
         self._site_quat_conj = np.zeros(4)
         self._error_quat = np.zeros(4)
 
-    def solve(
+    def ik(
         self,
         position: np.ndarray,
         orientation: np.ndarray,
         reference_pose: Optional[np.ndarray] = None,
-    ):
+    ) -> np.ndarray:
         """Solve IK."""
-        if reference_pose is not None:
-            self._q0 = reference_pose
-
-        self._data.ctrl[self._actuator_ids] = self._q0
-        self._data.qpos[self._dof_ids] = self._q0
-        self._data.qvel[self._dof_ids] *= 0
-        self._data.qacc[self._dof_ids] *= 0
+        q0 = self._q0 if reference_pose is None else reference_pose
+        self._set_pose(q0)
 
         for _ in range(self._ik_steps):
             dx = position - self._data.site(self._site_id).xpos
@@ -91,7 +86,7 @@ class Pik:
                 self._jac.T @ self._jac + self._diag, self._jac.T @ self._twist
             )
             dq += (self._eye - np.linalg.pinv(self._jac) @ self._jac) @ (
-                self._Kn * (self._q0 - self._data.qpos[self._dof_ids])
+                self._Kn * (q0 - self._data.qpos[self._dof_ids])
             )
 
             dq_abs_max = np.abs(dq).max()
@@ -106,8 +101,23 @@ class Pik:
             mujoco.mj_step(self._model, self._data)
         return q[self._dof_ids].copy()
 
+    def fk(self, pose: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Solve Forward Kinematics."""
+        self._set_pose(pose)
+        position = self._data.site(self._site_id).xpos
+        orientation = np.zeros(4)
+        mujoco.mju_mat2Quat(orientation, self._data.site(self._site_id).xmat)
+        return position, orientation
+
     def _default_kn(self, joints_count: int):
         kn = np.repeat(self.DEFAULT_KN_POS, joints_count)
         if joints_count >= 6:
             kn[-3:] = self.DEFAULT_KN_ROT
         return kn
+
+    def _set_pose(self, pose: np.ndarray):
+        self._data.ctrl[self._actuator_ids] = pose
+        self._data.qpos[self._dof_ids] = pose
+        self._data.qvel[self._dof_ids] *= 0
+        self._data.qacc[self._dof_ids] *= 0
+        mujoco.mj_step(self._model, self._data)
