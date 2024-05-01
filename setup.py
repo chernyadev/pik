@@ -21,8 +21,6 @@ def get_version(rel_path):
 
 core_requirements = [
     "mujoco>=3.1.0",
-    "numpy",
-    "numpy-quaternion",
 ]
 
 setuptools.setup(
