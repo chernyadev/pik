@@ -1,4 +1,5 @@
 import numpy as np
+import quaternion
 
 from pik.pik import Pik
 
@@ -20,4 +21,8 @@ pik = Pik(
     actuator_names=actuator_names,
     reference_pose=reference_pose,
 )
-pik.ik(np.array([0.5, 0, 0.5]), np.array([0, 1, 0, 0]))
+
+pos = np.array([0.5, 0, 0.5])
+ori = quaternion.from_euler_angles(0, np.pi, 0)
+ori = quaternion.as_float_array(ori)
+pik.ik(pos, ori)

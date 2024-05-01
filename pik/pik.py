@@ -11,7 +11,7 @@ class Pik:
     DEFAULT_KN_POS = 10.0
     DEFAULT_KN_ROT = 5.0
     DT = 0.002
-    INTEGRATION_DT = 0.1
+    INTEGRATION_DT = 1.0
     DAMPING = 1e-4
 
     def __init__(
@@ -21,7 +21,7 @@ class Pik:
         actuator_names: list[str],
         reference_pose: Optional[np.ndarray] = None,
         kn: Optional[np.ndarray] = None,
-        ik_steps: int = 2,
+        ik_steps: int = 500,
     ):
         """Init."""
         self._ik_steps = ik_steps
@@ -77,7 +77,7 @@ class Pik:
             mujoco.mju_negQuat(self._site_quat_conj, self._site_quat)
             mujoco.mju_mulQuat(self._error_quat, orientation, self._site_quat_conj)
             mujoco.mju_quat2Vel(self._twist[3:], self._error_quat, 1.0)
-            self._twist[3:] *= self.INTEGRATION_DT
+            self._twist[3:] *= 1.0 / self.INTEGRATION_DT
 
             mujoco.mj_jacSite(
                 self._model, self._data, self._jac[:3], self._jac[3:], self._site_id
