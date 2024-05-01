@@ -11,8 +11,8 @@ class Pik:
     DEFAULT_KN_POS = 10.0
     DEFAULT_KN_ROT = 5.0
     DT = 0.002
-    INTEGRATION_DT = 0.5
-    DAMPING = 1e-2
+    INTEGRATION_DT = 0.1
+    DAMPING = 1e-4
 
     def __init__(
         self,
