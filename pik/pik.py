@@ -99,15 +99,12 @@ class Pik:
 
             self._data.ctrl[self._actuator_ids] = q[self._dof_ids]
             mujoco.mj_step(self._model, self._data)
-        return q[self._dof_ids].copy()
+        return self._data.ctrl[self._actuator_ids].copy()
 
     def fk(self, pose: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """Solve Forward Kinematics."""
         self._set_pose(pose)
-        position = self._data.site(self._site_id).xpos
-        orientation = np.zeros(4)
-        mujoco.mju_mat2Quat(orientation, self._data.site(self._site_id).xmat)
-        return position, orientation
+        return self._get_site_pose()
 
     def _default_kn(self, joints_count: int):
         kn = np.repeat(self.DEFAULT_KN_POS, joints_count)
@@ -121,3 +118,9 @@ class Pik:
         self._data.qvel[self._dof_ids] *= 0
         self._data.qacc[self._dof_ids] *= 0
         mujoco.mj_step(self._model, self._data)
+
+    def _get_site_pose(self) -> tuple[np.ndarray, np.ndarray]:
+        position = self._data.site(self._site_id).xpos
+        orientation = np.zeros(4)
+        mujoco.mju_mat2Quat(orientation, self._data.site(self._site_id).xmat)
+        return position, orientation
